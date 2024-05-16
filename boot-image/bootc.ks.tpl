@@ -1,5 +1,5 @@
 # Basic setup
-text
+cmdline
 network --bootproto=dhcp --device=link --activate
 
 # Partition/volume setup

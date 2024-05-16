@@ -1,0 +1,11 @@
+[Unit]
+Description=Regenerate the Nvidia Container Toolkit CDI specification
+Wants=kmod-static-nodes.service
+After=kmod-static-nodes.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nvidia-ctk cdi generate --output=/etc/cdi/nvidia
+
+[Install]
+WantedBy=multi-user.target default.target

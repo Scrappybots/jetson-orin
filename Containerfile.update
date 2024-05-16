@@ -1,0 +1,3 @@
+FROM IMAGE
+
+RUN dnf -y update

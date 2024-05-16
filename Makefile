@@ -30,6 +30,11 @@ boot-image/l4t-bootc.iso: boot-image/bootc.ks .ksimage boot-image/rhel-9.4-aarch
 	$(RUNTIME) run --arch aarch64 -v ./boot-image:/workdir --privileged --security-opt label=disable --entrypoint bash --workdir /workdir $(IMAGE)-ksimage -exc \
 		'rm -f $(@F) && mkksiso $(<F) rhel-9.4-aarch64-boot.iso $(@F)'
 
+.PHONY: update
+update:
+	$(RUNTIME) build --arch aarch64 --pull=always --from $(IMAGE) -f Containerfile.update . -t $(IMAGE)
+	$(RUNTIME) push $(IMAGE)
+
 .PHONY: burn
 burn: boot-image/l4t-bootc.iso
 	sudo dd if=./boot-image/l4t-bootc.iso of=$(DEST) bs=1M conv=fsync status=progress

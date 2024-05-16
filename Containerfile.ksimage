@@ -1,0 +1,3 @@
+FROM BASE
+
+RUN dnf -y install lorax

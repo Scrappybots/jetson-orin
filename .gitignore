@@ -1,4 +1,6 @@
 *.iso
 *.ks
+auth.json
 .build
 .push
+.ksimage

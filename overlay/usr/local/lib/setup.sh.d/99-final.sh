@@ -1,0 +1,1 @@
+dnf -y clean all

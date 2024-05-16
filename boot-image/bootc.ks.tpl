@@ -20,6 +20,7 @@ ostreecontainer --transport registry --url ${IMAGE}
 firewall --use-system-defaults
 rootpw --iscrypted --lock
 user --name ${USER} --lock --uid 1000 --gid 1000 --groups video,render
+sshkey --username ${USER} "${SSH_KEY}"
 
 %post --log=/root/anaconda-ks-post.log
 set -x

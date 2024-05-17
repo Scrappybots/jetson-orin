@@ -1,7 +1,7 @@
 [Unit]
 Description=Regenerate the Nvidia Container Toolkit CDI specification
-Wants=nvargus-daemon.service
-After=nvargus-daemon.service
+Wants=nvargus-daemon.service modprobe@drm.service
+After=nvargus-daemon.service modprobe@drm.service
 
 [Service]
 Type=oneshot

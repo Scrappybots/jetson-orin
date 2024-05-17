@@ -42,6 +42,7 @@ set -ex
 cat << 'EOF' > /etc/ostree/auth.json
 ${AUTH}
 EOF
+groupadd -r -g 39 video
 groupadd -g 1000 core
 useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel,video -s /bin/bash core
 mkdir -p /var/home/core/.ssh

@@ -32,9 +32,21 @@ ${AUTH}
 EOF
 %end
 
+%post --log=/mnt/sysimage/var/roothome/anaconda-ks-post-no-chroot.log --nochroot
+set -ex
+mv /tmp/anaconda-ks-pre.log /mnt/sysimage/var/roothome/
+%end
+
 %post --log=/var/roothome/anaconda-ks-post.log
-set -x
-mv /tmp/anaconda-ks-pre.log /var/roothome/
+set -ex
+groupadd -g 1000 core
+useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel -s /bin/bash core
+mkdir -p /var/home/core/.ssh
+cat << 'EOF' > /var/home/core/.ssh/authorized_keys
+${SSH_KEYS}
+EOF
+chmod -R u=rwX,g=,o= /var/home/core/.ssh
+chown -R 1000:1000 /var/home/core
 %end
 
 reboot

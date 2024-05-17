@@ -41,5 +41,7 @@ RUN groupadd -g 1000 core \
  && useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel -s /bin/bash core \
  && mkdir -p /var/home/core/.ssh \
  && echo "$SSH_KEY" > /var/home/core/.ssh/authorized_keys \
+ && chmod 0700 /var/home/core/.ssh \
+ && chmod 0600 /var/home/core/.ssh/authorized_keys \
  && chown -R 1000:1000 /var/home/core \
  && restorecon -riv /var/home/core

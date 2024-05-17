@@ -1,0 +1,6 @@
+[Unit]
+Description=Manage SSH keys for the core user
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ssh-keys.sh

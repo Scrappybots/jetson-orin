@@ -41,12 +41,6 @@ set -ex
 cat << 'EOF' > /etc/ostree/auth.json
 ${AUTH}
 EOF
-mkdir -p /var/home/core/.ssh
-cat << 'EOF' > /var/home/core/.ssh/authorized_keys
-${SSH_KEYS}
-EOF
-chmod -R u=rwX,g=,o= /var/home/core/.ssh
-chown -R 1000:1000 /var/home/core
 %end
 
 reboot

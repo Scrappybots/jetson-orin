@@ -42,3 +42,4 @@ COPY overlays/debug/ /
 
 # Basic user configuration with nss-altfiles
 COPY overlays/users/ /
+RUN useradd -m core

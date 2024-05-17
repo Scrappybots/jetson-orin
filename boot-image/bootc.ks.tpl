@@ -9,6 +9,7 @@ reqpart --add-boot
 part pv.01 --grow --ondisk mmcblk0
 volgroup rhel pv.01
 logvol --fstype xfs --size 100 --grow --name root --vgname rhel /
+bootloader --nombr --location none
 
 part pv.02 --grow --ondisk nvme0n1
 volgroup data pv.02
@@ -45,6 +46,7 @@ mkdir -p /var/home/core/.ssh
 cat << 'EOF' > /var/home/core/.ssh/authorized_keys
 ${SSH_KEYS}
 EOF
+echo 'core	ALL=(ALL)	NOPASSWD: ALL' > /etc/sudoers.d/core
 chmod -R u=rwX,g=,o= /var/home/core/.ssh
 chown -R 1000:1000 /var/home/core
 %end

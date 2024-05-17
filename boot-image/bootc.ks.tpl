@@ -7,7 +7,6 @@ zerombr
 clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
 part --grow --fstype xfs --ondisk mmcblk0 /
-bootloader --boot-drive mmcblk0
 
 part pv.01 --size=100 --grow --ondisk nvme0n1
 volgroup data pv.01

@@ -39,8 +39,11 @@ mv /tmp/anaconda-ks-pre.log /mnt/sysimage/var/roothome/
 
 %post --log=/var/roothome/anaconda-ks-post.log
 set -ex
+cat << 'EOF' > /etc/ostree/auth.json
+${AUTH}
+EOF
 groupadd -g 1000 core
-useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel -s /bin/bash core
+useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel,video -s /bin/bash core
 mkdir -p /var/home/core/.ssh
 cat << 'EOF' > /var/home/core/.ssh/authorized_keys
 ${SSH_KEYS}

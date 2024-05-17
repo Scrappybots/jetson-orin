@@ -6,11 +6,13 @@ network --bootproto=dhcp --device=link --activate
 zerombr
 clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
-part --grow --fstype xfs --ondisk mmcblk0 /
+part pv.01 --grow --ondisk mmcblk0
+volgroup rhel pv.01
+logvol --fstype xfs --grow --name root --vgname rhel /
 
-part pv.01 --size=100 --grow --ondisk nvme0n1
-volgroup data pv.01
-logvol --fstype xfs --size=100 --grow --name var --vgname data /var
+part pv.02 --grow --ondisk nvme0n1
+volgroup data pv.02
+logvol --fstype xfs --grow --name var --vgname data /var
 
 # bootc image installation
 ostreecontainer --transport registry --url ${IMAGE}

@@ -1,7 +1,7 @@
 [Unit]
 Description=Regenerate the Nvidia Container Toolkit CDI specification
-Wants=kmod-static-nodes.service ostree-remount.service
-After=kmod-static-nodes.service ostree-remount.service
+Wants=nvargus-daemon.service
+After=nvargus-daemon.service
 
 [Service]
 Type=oneshot

@@ -5,7 +5,5 @@ After=kmod-static-nodes.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/nvidia-ctk cdi generate --output=/etc/cdi/nvidia
-
-[Install]
-WantedBy=multi-user.target default.target
+ExecStart=/usr/bin/nvidia-ctk cdi generate
+StandardOutput=/etc/cdi/nvidia.yaml

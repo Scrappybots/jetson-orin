@@ -25,7 +25,6 @@ rootpw --lock
 
 %pre-install --erroronfail --log=/tmp/anaconda-ks-pre.log
 set -x
-
 # Configure authentication for bootc image registry
 cat << 'EOF' > /etc/ostree/auth.json
 ${AUTH}
@@ -42,14 +41,10 @@ set -ex
 cat << 'EOF' > /etc/ostree/auth.json
 ${AUTH}
 EOF
-groupadd -r -g 39 video
-groupadd -g 1000 core
-useradd -c 'core' -d /var/home/core -u 1000 -g 1000 -m -G wheel,video -s /bin/bash core
 mkdir -p /var/home/core/.ssh
 cat << 'EOF' > /var/home/core/.ssh/authorized_keys
 ${SSH_KEYS}
 EOF
-echo 'core	ALL=(ALL)	NOPASSWD: ALL' > /etc/sudoers.d/core
 chmod -R u=rwX,g=,o= /var/home/core/.ssh
 chown -R 1000:1000 /var/home/core
 %end

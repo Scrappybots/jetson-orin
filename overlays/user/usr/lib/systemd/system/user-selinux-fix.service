@@ -1,0 +1,6 @@
+[Unit]
+Description=Reset the SELinux context of the core user SSH home directories
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/chcon -R -u unconfined_u -r object_r -t ssh_home_t /var/home/core/.ssh

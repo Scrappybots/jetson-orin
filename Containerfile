@@ -33,8 +33,8 @@ RUN dnf -y install https://repo-l4t.apps.okd.jharmison.com/jharmison-l4t-repo-9.
  && dnf config-manager --add-repo https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
  && dnf -y install \
     nvidia-container-toolkit-base \
-	nvidia-jetpack-all \
-	nvidia-jetpack-kmod \
+    nvidia-jetpack-all \
+    nvidia-jetpack-kmod \
  && dnf -y clean all
 
 # Some helpful debugging output

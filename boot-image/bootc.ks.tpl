@@ -9,7 +9,6 @@ reqpart --add-boot
 part pv.01 --grow --ondisk mmcblk0
 volgroup rhel pv.01
 logvol --fstype xfs --size 100 --grow --name root --vgname rhel /
-bootloader --nombr --location none
 
 part pv.02 --grow --ondisk nvme0n1
 volgroup data pv.02

@@ -27,7 +27,7 @@ boot-image/bootc.ks: boot-image/bootc.ks.tpl auth.json
 	@echo Updated kickstart
 
 boot-image/l4t-bootc.iso: boot-image/bootc.ks .ksimage boot-image/rhel-9.4-aarch64-boot.iso
-	$(RUNTIME) run --arch aarch64 -v ./boot-image:/workdir --privileged --security-opt label=disable --entrypoint bash --workdir /workdir $(IMAGE)-ksimage -exc \
+	$(RUNTIME) run --rm --arch aarch64 -v ./boot-image:/workdir --privileged --security-opt label=disable --entrypoint bash --workdir /workdir $(IMAGE)-ksimage -exc \
 		'rm -f $(@F) && mkksiso $(<F) rhel-9.4-aarch64-boot.iso $(@F)'
 
 .PHONY: update

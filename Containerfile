@@ -48,4 +48,4 @@ RUN groupadd -g 1000 core \
  && echo "$SSH_KEY" > /var/home/core/.ssh/authorized_keys \
  && chmod -R u=rwX,g=,o= /var/home/core/.ssh \
  && chown -R 1000:1000 /var/home/core \
- && touch /var/.autorelabel
+ && chcon -R -u unconfined_u -r object_r -t ssh_home_t /var/home/core/.ssh

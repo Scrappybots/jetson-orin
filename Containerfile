@@ -38,7 +38,7 @@ RUN dnf -y install https://repo-l4t.apps.okd.jharmison.com/jharmison-l4t-repo-9.
  && dnf -y clean all
 
 # Some helpful debugging output
-COPY overlays/debug/ /
+#COPY overlays/debug/ /
 
 # Basic user configuration with nss-altfiles
 COPY overlays/users/ /

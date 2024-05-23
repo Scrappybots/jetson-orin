@@ -9,8 +9,12 @@ DEST := /dev/sda
 .PHONY: all
 all: .push boot-image/l4t-bootc.iso
 
-.build: Containerfile $(shell find overlays -type f)
-	$(RUNTIME) build --arch aarch64 --build-arg --pull=always --from $(BASE) . -t $(IMAGE)
+overlays/users/usr/local/ssh/core.keys:
+	@echo Please put the authorized_keys file you would like for the core user in $@ >&2
+	@exit 1
+
+.build: Containerfile $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --build-arg --pull=always --from $(BASE) . -t $(IMAGE)
 	@touch $@
 
 .push: .build
@@ -18,7 +22,7 @@ all: .push boot-image/l4t-bootc.iso
 	@touch $@
 
 .ksimage: Containerfile.ksimage
-	$(RUNTIME) build --arch aarch64 --from $(BASE) . -f $< -t $(IMAGE)-ksimage
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(BASE) . -f $< -t $(IMAGE)-ksimage
 	@touch $@
 
 boot-image/bootc.ks: boot-image/bootc.ks.tpl auth.json
@@ -35,7 +39,7 @@ debug: .build
 
 .PHONY: update
 update:
-	$(RUNTIME) build --arch aarch64 --pull=always --from $(IMAGE) -f Containerfile.update . -t $(IMAGE)
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(IMAGE) -f Containerfile.update . -t $(IMAGE)
 	$(RUNTIME) push $(IMAGE)
 
 .PHONY: burn
@@ -45,3 +49,4 @@ burn: boot-image/l4t-bootc.iso
 .PHONY: clean
 clean:
 	rm -f .build .push .ksimage boot-image/bootc.ks boot-image/l4t-bootc.iso
+	buildah prune -f

@@ -1,3 +1,4 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
-RUN dnf -y install lorax pykickstart
+RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
+    dnf -y install lorax pykickstart

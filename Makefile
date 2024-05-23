@@ -13,12 +13,14 @@ overlays/users/usr/local/ssh/core.keys:
 	@echo Please put the authorized_keys file you would like for the core user in $@ >&2
 	@exit 1
 
-.build: Containerfile $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --build-arg --pull=always --from $(BASE) . -t $(IMAGE)
+.build: Containerfile Containerfile.devel $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(BASE) . -t $(IMAGE)
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(IMAGE) -f Containerfile.devel . -t $(IMAGE)-devel
 	@touch $@
 
 .push: .build
 	$(RUNTIME) push $(IMAGE)
+	$(RUNTIME) push $(IMAGE)-devel
 	@touch $@
 
 .ksimage: Containerfile.ksimage
@@ -35,7 +37,7 @@ boot-image/l4t-bootc.iso: boot-image/bootc.ks .ksimage boot-image/rhel-9.4-aarch
 
 .PHONY: debug
 debug: .build
-	$(RUNTIME) run --rm -it --arch aarch64 --entrypoint /bin/bash $(IMAGE) -li
+	$(RUNTIME) run --rm -it --arch aarch64 --entrypoint /bin/bash $(IMAGE)-devel -li
 
 .PHONY: update
 update:

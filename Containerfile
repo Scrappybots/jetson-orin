@@ -1,5 +1,7 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
+# LABEL org.opencontainers.image.version=exampleversion
+
 # Perform an initial update and do some basic package installation
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
     dnf -y install \
@@ -10,23 +12,6 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
  && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
  || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
       /etc/containers/storage.conf
-
-# Install some useful developer tools and environment niceties
-RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
-    dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
- && dnf -y install \
-      make \
-      gcc \
-      g++ \
-      git \
-      neovim \
-      buildah \
-      skopeo \
-      python3.12 \
-      python3.12-devel \
-      python3.12-pip-wheel \
-      fastfetch \
-      btop
 
 # Enable L4T/Jetpack 6 on the AGX Orin
 COPY overlays/nvidia/ /

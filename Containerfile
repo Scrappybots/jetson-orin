@@ -2,8 +2,7 @@ FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
 # Perform an initial update and do some basic package installation
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
-    dnf -y update \
- && dnf -y install \
+    dnf -y install \
     tmux \
     podman \
     curl \

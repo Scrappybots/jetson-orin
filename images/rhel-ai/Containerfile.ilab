@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+
+FROM nvcr.io/nvidia/cuda:12.3.2-devel-ubi9
+RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
+    dnf install -y python3.11 git python3-pip make automake gcc gcc-c++ python3.11-devel
+
+WORKDIR /instructlab
+RUN python3.11 -m ensurepip
+RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
+    dnf install -y gcc
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+COPY overlays/ilab/ /
+RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
+    --mount=target=/root/.cache/pip,type=cache,id=pip-cache \
+    dnf install -y libcudnn8 nvidia-driver-NVML nvidia-driver-cuda-libs \
+ && python3.11 -m pip install --force-reinstall nvidia-cuda-nvcc-cu12
+
+RUN export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64" \
+    && export CUDA_HOME=/usr/local/cuda \
+    && export PATH="/usr/local/cuda/bin:$PATH" \
+    && export XLA_TARGET=cuda120 \
+    && export XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda
+
+ARG GIT_TAG=stable
+RUN --mount=target=/root/.cache/pip,type=cache,id=pip-cache \
+    CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3.11 -m pip install \
+        -r https://raw.githubusercontent.com/instructlab/instructlab/${GIT_TAG}/requirements.txt \
+        --force-reinstall --no-cache-dir llama-cpp-python \
+ && python3.11 -m pip install git+https://github.com/instructlab/instructlab.git@${GIT_TAG}
+
+CMD ["/bin/bash"]

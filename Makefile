@@ -58,7 +58,9 @@ debug: .build
 .PHONY: update
 update:
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(IMAGE) -f Containerfile.update . -t $(IMAGE)
+	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(IMAGE)-devel -f Containerfile.update . -t $(IMAGE)-devel
 	$(CMD_PREFIX) $(RUNTIME) push $(IMAGE)
+	$(CMD_PREFIX) $(RUNTIME) push $(IMAGE)-devel
 
 .PHONY: burn
 burn: boot-image/l4t-bootc.iso

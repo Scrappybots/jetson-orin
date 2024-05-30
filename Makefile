@@ -71,13 +71,13 @@ clean:
 	$(CMD_PREFIX) rm -f .build .push .ksimage boot-image/bootc.ks boot-image/l4t-bootc.iso
 	$(CMD_PREFIX) buildah prune -f
 
-images/rhel-ai/build/instructlab-nvidia: images/rhel-ai/Containerfile.ilab $(shell git ls-files | grep '^images/rhel-ai/overlays/ilab')
+images/rhel-ai/build/instructlab-nvidia: images/rhel-ai/Containerfile.ilab $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos')
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDA_BASE) -f Containerfile.ilab --layers=false --squash-all images/rhel-ai -t oci:$@
 
 images/rhel-ai/build/deepspeed-trainer: images/rhel-ai/Containerfile.deepspeed
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDNN_BASE) -f Containerfile.deepspeed --layers=false --squash-all images/rhel-ai -t oci:$@
 
-images/rhel-ai/build/vllm: images/rhel-ai/Containerfile.vllm $(shell git ls-files | grep '^images/rhel-ai/overlays/vllm')
+images/rhel-ai/build/vllm: images/rhel-ai/Containerfile.vllm $(shell git ls-files | grep '^images/rhel-ai/overlays/vllm') $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos')images/rhel-ai/overlays/vllm/build/workspace/
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always -f Containerfile.vllm --layers=false --squash-all images/rhel-ai -t oci:$@
 
 images/rhel-ai/.build: images/rhel-ai/Containerfile images/rhel-ai/build/instructlab-nvidia images/rhel-ai/build/deepspeed-trainer images/rhel-ai/build/vllm

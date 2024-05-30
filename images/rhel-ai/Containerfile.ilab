@@ -10,7 +10,7 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
     dnf install -y gcc
 RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 
-COPY overlays/ilab/ /
+COPY overlays/cuda-repos/ /
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
     --mount=target=/root/.cache/pip,type=cache,id=pip-cache \
     dnf install -y libcudnn8 nvidia-driver-NVML nvidia-driver-cuda-libs \

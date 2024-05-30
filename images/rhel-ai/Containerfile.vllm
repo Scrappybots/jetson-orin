@@ -1,8 +1,5 @@
-# Please update any changes made here to
-# docs/source/dev/dockerfile-ubi/dockerfile-ubi.rst
-
 ## Global Args #################################################################
-ARG BASE_UBI_IMAGE_TAG=9.4-949.1714662671
+ARG BASE_UBI_IMAGE_TAG=9.4
 ARG PYTHON_VERSION=3.11
 
 # NOTE: This setting only has an effect when not using prebuilt-wheel kernels
@@ -21,9 +18,12 @@ ENV LANG=C.UTF-8 \
 
 # Some utils for dev purposes - tar required for kubectl cp
 RUN microdnf install -y \
-        which procps findutils tar vim \
-    && microdnf clean all
-
+      which \
+      procps \
+      findutils \
+      tar \
+      vim \
+ && microdnf clean all
 
 ## Python Installer ############################################################
 FROM base as python-install
@@ -31,13 +31,13 @@ FROM base as python-install
 ARG PYTHON_VERSION
 ARG MINIFORGE_VERSION=24.3.0-0
 
-RUN curl -fsSL -o ~/miniforge3.sh -O  "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-$(uname)-$(uname -m).sh" && \
-    chmod +x ~/miniforge3.sh && \
-    bash ~/miniforge3.sh -b -p /opt/conda && \
-    source "/opt/conda/etc/profile.d/conda.sh" && \
-    conda create -y -p /opt/vllm python=${PYTHON_VERSION} && \
-    conda activate /opt/vllm && \
-    rm ~/miniforge3.sh
+RUN curl -fsSL -o ~/miniforge3.sh -O  "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-$(uname)-$(uname -m).sh" \
+ && chmod +x ~/miniforge3.sh \
+ && bash ~/miniforge3.sh -b -p /opt/conda \
+ && source "/opt/conda/etc/profile.d/conda.sh" \
+ && conda create -y -p /opt/vllm python=${PYTHON_VERSION} \
+ && conda activate /opt/vllm \
+ && rm ~/miniforge3.sh
 # use of the /opt/vllm env requires:
 # ENV PATH=/opt/vllm/bin/:$PATH
 
@@ -54,18 +54,15 @@ ENV CUDA_VERSION=12.0.0 \
     NV_CUDA_CUDART_VERSION=12.2.53-1 \
     NV_CUDA_COMPAT_VERSION=535.104.12
 
-RUN curl -Lo /etc/yum.repos.d/cuda-rhel9.repo \
-        https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
-
+COPY overlays/cuda-repos/ /
 RUN microdnf install -y \
-        cuda-cudart-12-2-${NV_CUDA_CUDART_VERSION} \
-        cuda-compat-12-2-${NV_CUDA_COMPAT_VERSION} \
-    && microdnf clean all
+      cuda-cudart-12-2-${NV_CUDA_CUDART_VERSION} \
+      cuda-compat-12-2-${NV_CUDA_COMPAT_VERSION} \
+ && microdnf clean all
 
 ENV CUDA_HOME="/usr/local/cuda" \
     PATH="/usr/local/nvidia/bin:${CUDA_HOME}/bin:${PATH}" \
     LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64:$CUDA_HOME/lib64:$CUDA_HOME/extras/CUPTI/lib64:${LD_LIBRARY_PATH}"
-
 
 ## CUDA Runtime ################################################################
 FROM cuda-base as cuda-runtime
@@ -76,12 +73,12 @@ ENV NV_NVTX_VERSION=12.2.53-1 \
     NV_LIBNCCL_PACKAGE_VERSION=2.18.5-1+cuda12.2
 
 RUN microdnf install -y \
-        cuda-libraries-12-2-${NV_CUDA_LIB_VERSION} \
-        cuda-nvtx-12-2-${NV_NVTX_VERSION} \
-        libnpp-12-2-${NV_LIBNPP_VERSION} \
-        libcublas-12-2-${NV_LIBCUBLAS_VERSION} \
-        libnccl-${NV_LIBNCCL_PACKAGE_VERSION} \
-    && microdnf clean all
+      cuda-libraries-12-2-${NV_CUDA_LIB_VERSION} \
+      cuda-nvtx-12-2-${NV_NVTX_VERSION} \
+      libnpp-12-2-${NV_LIBNPP_VERSION} \
+      libcublas-12-2-${NV_LIBCUBLAS_VERSION} \
+      libnccl-${NV_LIBNCCL_PACKAGE_VERSION} \
+ && microdnf clean all
 
 
 ## CUDA Development ############################################################
@@ -94,15 +91,15 @@ ENV NV_CUDA_CUDART_DEV_VERSION=12.2.53-1 \
     NV_LIBNCCL_DEV_PACKAGE_VERSION=2.18.5-1+cuda12.2
 
 RUN microdnf install -y \
-        cuda-command-line-tools-12-2-${NV_CUDA_LIB_VERSION} \
-        cuda-libraries-devel-12-2-${NV_CUDA_LIB_VERSION} \
-        cuda-minimal-build-12-2-${NV_CUDA_LIB_VERSION} \
-        cuda-cudart-devel-12-2-${NV_CUDA_CUDART_DEV_VERSION} \
-        cuda-nvml-devel-12-2-${NV_NVML_DEV_VERSION} \
-        libcublas-devel-12-2-${NV_LIBCUBLAS_DEV_VERSION} \
-        libnpp-devel-12-2-${NV_LIBNPP_DEV_VERSION} \
-        libnccl-devel-${NV_LIBNCCL_DEV_PACKAGE_VERSION} \
-    && microdnf clean all
+      cuda-command-line-tools-12-2-${NV_CUDA_LIB_VERSION} \
+      cuda-libraries-devel-12-2-${NV_CUDA_LIB_VERSION} \
+      cuda-minimal-build-12-2-${NV_CUDA_LIB_VERSION} \
+      cuda-cudart-devel-12-2-${NV_CUDA_CUDART_DEV_VERSION} \
+      cuda-nvml-devel-12-2-${NV_NVML_DEV_VERSION} \
+      libcublas-devel-12-2-${NV_LIBCUBLAS_DEV_VERSION} \
+      libnpp-devel-12-2-${NV_LIBNPP_DEV_VERSION} \
+      libnccl-devel-${NV_LIBNCCL_DEV_PACKAGE_VERSION} \
+ && microdnf clean all
 
 ENV LIBRARY_PATH="$CUDA_HOME/lib64/stubs"
 
@@ -120,66 +117,41 @@ ENV PATH=/opt/vllm/bin/:$PATH
 
 # install cuda and common dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements-common.txt,target=requirements-common.txt \
-    --mount=type=bind,source=requirements-cuda.txt,target=requirements-cuda.txt \
-    pip3 install \
-        -r requirements-cuda.txt
+    --mount=type=bind,source=requirements,target=requirements \
+    pip3 install -r requirements/cuda.txt
 
 ## Development #################################################################
 FROM python-cuda-base AS dev
 
 # install build and runtime dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements-common.txt,target=requirements-common.txt \
-    --mount=type=bind,source=requirements-cuda.txt,target=requirements-cuda.txt \
-    --mount=type=bind,source=requirements-dev.txt,target=requirements-dev.txt \
+    --mount=type=bind,source=requirements,target=requirements \
     pip3 install \
-        -r requirements-cuda.txt \
-        -r requirements-dev.txt
+      -r requirements/cuda.txt \
+      -r requirements/dev.txt
 
 ## Proto Compilation ###########################################################
 FROM python-install AS gen-protos
 
 ENV PATH=/opt/vllm/bin/:$PATH
 
-RUN microdnf install -y \
-        make \
-        findutils \
-    && microdnf clean all
+RUN microdnf install -y make \
+ && microdnf clean all
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=Makefile,target=Makefile \
-    --mount=type=bind,source=proto,target=proto \
-    make gen-protos
-
-## Extension Cache #############################################################
-# Instead of compiling artifacts every build just copy from pre-built wheel
-# This might not work if the PyTorch and CUDA versions don't match!
-FROM base as prebuilt-wheel
-
-RUN microdnf install -y \
-        unzip \
-    && microdnf clean all
-
-ARG PYTHON_VERSION
-# 0.4.2 is built for CUDA 12.1 and PyTorch 2.3.0
-ARG VLLM_WHEEL_VERSION=0.4.2
-
-RUN curl -Lo vllm.whl https://github.com/vllm-project/vllm/releases/download/v${VLLM_WHEEL_VERSION}/vllm-${VLLM_WHEEL_VERSION}-cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}-manylinux1_x86_64.whl \
-    && unzip vllm.whl \
-    && rm vllm.whl
-# compiled extensions located at /workspace/vllm/*.so
+    --mount=type=bind,source=protos,target=protos \
+    cd protos && make gen-protos
 
 ## Builder #####################################################################
 FROM dev AS build
 
 # install build dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements-build.txt,target=requirements-build.txt \
-    pip install -r requirements-build.txt
+    --mount=type=bind,source=requirements,target=requirements \
+    pip install -r requirements/build.txt
 
 # copy input files
-COPY vllm/build/ /
+COPY overlays/vllm/build/ /
 COPY csrc csrc
 COPY setup.py setup.py
 COPY cmake cmake
@@ -283,6 +255,6 @@ RUN microdnf install -y shadow-utils \
     && chmod g+rwx $HOME /usr/src /workspace
 
 RUN ln -s /usr/lib64/libcuda.so.1 /usr/lib64/libcuda.so
-COPY overlays/vllm/runtime/ /
+COPY overlays/vllm/ /
 
 ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server"]

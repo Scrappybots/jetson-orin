@@ -15,4 +15,5 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       python3.12-devel \
       python3.12-pip-wheel \
       fastfetch \
-      btop
+      btop \
+      nvtop

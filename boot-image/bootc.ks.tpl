@@ -5,7 +5,7 @@ network --bootproto=dhcp --device=link --activate
 # Partition/volume setup
 zerombr
 clearpart --all --initlabel --disklabel=gpt
-reqpart --add-boot
+reqpart
 part pv.01 --grow --ondisk mmcblk0
 volgroup rhel pv.01
 logvol --fstype xfs --size 100 --grow --name root --vgname rhel /

@@ -13,7 +13,7 @@ overlays/users/usr/local/ssh/core.keys:
 
 .build: Containerfile Containerfile.devel $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(BASE) . -t $(IMAGE)
-	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(IMAGE) -f Containerfile.devel . -t $(IMAGE)-devel
+	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(IMAGE) --pull=never -f Containerfile.devel . -t $(IMAGE)-devel
 	@touch $@
 
 .push: .build

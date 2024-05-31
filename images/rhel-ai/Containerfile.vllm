@@ -9,8 +9,6 @@ ARG TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6 8.9 9.0+PTX"
 ## Base Layer ##################################################################
 FROM registry.access.redhat.com/ubi9/ubi-minimal:${BASE_UBI_IMAGE_TAG} as base
 
-RUN echo "This isn't fixed up yet and won't work" && exit 1
-
 WORKDIR /workspace
 
 ENV LANG=C.UTF-8 \
@@ -152,14 +150,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # copy input files
 COPY overlays/vllm/build/ /
-COPY csrc csrc
-COPY setup.py setup.py
-COPY cmake cmake
-COPY CMakeLists.txt CMakeLists.txt
-COPY requirements-common.txt requirements-common.txt
-COPY requirements-cuda.txt requirements-cuda.txt
-COPY pyproject.toml pyproject.toml
-COPY vllm/__init__.py vllm/__init__.py
 
 ARG TORCH_CUDA_ARCH_LIST
 ENV TORCH_CUDA_ARCH_LIST=$TORCH_CUDA_ARCH_LIST
@@ -177,28 +167,14 @@ ENV VLLM_INSTALL_PUNICA_KERNELS=1
 ENV PATH=/usr/local/cuda/bin:$PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-# Copy the entire directory before building wheel
-COPY --link vllm vllm
-
-# Comment if building *.so files from scratch
-##################################################
-# Copy the prebuilt *.so files
-COPY --from=prebuilt-wheel --link /workspace/vllm/*.so /workspace/vllm/
-##################################################
-
 # Copy over the generated *.pb2 files
 COPY --from=gen-protos --link /workspace/vllm/entrypoints/grpc/pb vllm/entrypoints/grpc/pb
 
 ENV CCACHE_DIR=/root/.cache/ccache
 RUN --mount=type=cache,target=/root/.cache/ccache \
     --mount=type=cache,target=/root/.cache/pip \
-    VLLM_USE_PRECOMPILED=1 python3 setup.py bdist_wheel --dist-dir=dist
+    python3 setup.py bdist_wheel --dist-dir=dist
 
-## Release #####################################################################
-# Note from the non-UBI Dockerfile:
-# We used base cuda image because pytorch installs its own cuda libraries.
-# However pynccl depends on cuda libraries so we had to switch to the runtime image
-# In the future it would be nice to get a container with pytorch and cuda without duplicating cuda
 FROM cuda-runtime AS vllm-openai
 
 WORKDIR /workspace
@@ -214,14 +190,13 @@ RUN --mount=type=bind,from=build,src=/workspace/dist,target=/workspace/dist \
 
 # Install the vllm_nccl package which is a bit quirky
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements-common.txt,target=requirements-common.txt \
-    --mount=type=bind,source=requirements-cuda.txt,target=requirements-cuda.txt \
+    --mount=type=bind,source=requirements,target=requirements \
     # The "install" happens in `setup.py` so it happens when built...
     # Remove the already installed package and the cached wheel
     pip uninstall -y vllm-nccl-cu12 \
     && pip cache remove vllm_nccl* \
     # install the version depended on by vllm requirements
-    && pip install vllm-nccl-cu12 -r requirements-cuda.txt \
+    && pip install vllm-nccl-cu12 -r requirements/cuda.txt \
     # The lib is downloaded to root's home directory... move it
     && mv ~/.config/vllm/nccl/cu12/libnccl.so.2* /usr/local/lib/libnccl.so.2
 ENV VLLM_NCCL_SO_PATH=/usr/local/lib/libnccl.so.2
@@ -229,11 +204,11 @@ ENV VLLM_NCCL_SO_PATH=/usr/local/lib/libnccl.so.2
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip3 install \
         # additional dependencies for the TGIS gRPC server
-        grpcio-tools==1.63.0 \
+        grpcio-tools \
         # additional dependencies for openai api_server
-        accelerate==0.30.0 \
+        accelerate \
         # hf_transfer for faster HF hub downloads
-        hf_transfer==0.1.6
+        hf_transfer
 
 # Triton needs a CC compiler
 RUN microdnf install -y gcc \
@@ -246,15 +221,7 @@ ENV HF_HUB_OFFLINE=1 \
     VLLM_USAGE_SOURCE=production-docker-image \
     VLLM_WORKER_MULTIPROC_METHOD=fork
 
-# setup non-root user for OpenShift
-RUN microdnf install -y shadow-utils \
-    && umask 002 \
-    && useradd --uid 2000 --gid 0 vllm \
-    && microdnf remove -y shadow-utils \
-    && microdnf clean all \
-    && chmod g+rwx $HOME /usr/src /workspace
-
 RUN ln -s /usr/lib64/libcuda.so.1 /usr/lib64/libcuda.so
-COPY overlays/vllm/ /
+COPY overlays/vllm/runtime/ /
 
 ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server"]

@@ -7,6 +7,7 @@ REPOSITORY := l4t/image
 TAG := latest
 IMAGE = $(REGISTRY)/$(REPOSITORY):$(TAG)
 DEST := /dev/sda
+VLLM_COMMIT := 3dc28190247ee1fd4d228d5860559e1417ee0451
 
 #
 # If you want to see the full commands, run:
@@ -68,7 +69,7 @@ burn: boot-image/l4t-bootc.iso
 
 .PHONY: clean
 clean:
-	$(CMD_PREFIX) rm -f .build .push .ksimage boot-image/bootc.ks boot-image/l4t-bootc.iso
+	$(CMD_PREFIX) rm -f .build .push .ksimage boot-image/bootc.ks boot-image/l4t-bootc.iso images/rhel-ai/overlays/vllm/build/workspace
 	$(CMD_PREFIX) buildah prune -f
 
 images/rhel-ai/build/instructlab-nvidia: images/rhel-ai/Containerfile.ilab $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos')
@@ -77,7 +78,13 @@ images/rhel-ai/build/instructlab-nvidia: images/rhel-ai/Containerfile.ilab $(she
 images/rhel-ai/build/deepspeed-trainer: images/rhel-ai/Containerfile.deepspeed
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDNN_BASE) -f Containerfile.deepspeed --layers=false --squash-all images/rhel-ai -t oci:$@
 
-images/rhel-ai/build/vllm: images/rhel-ai/Containerfile.vllm $(shell git ls-files | grep '^images/rhel-ai/overlays/vllm') $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos')images/rhel-ai/overlays/vllm/build/workspace/
+images/rhel-ai/overlays/vllm/build/workspace/setup.py:
+	$(CMD_PREFIX) mkdir -p $(@D) && cd $(@D) && { \
+		git clone https://github.com/IBM/vllm . || git fetch ; \
+	}
+	$(CMD_PREFIX) cd $(@D) && git branch rhel-ai $(VLLM_COMMIT) && git switch rhel-ai && rm -rf .git
+
+images/rhel-ai/build/vllm: images/rhel-ai/Containerfile.vllm $(shell git ls-files | grep '^images/rhel-ai/overlays/vllm') $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos') images/rhel-ai/overlays/vllm/build/workspace/setup.py
 	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always -f Containerfile.vllm --layers=false --squash-all images/rhel-ai -t oci:$@
 
 images/rhel-ai/.build: images/rhel-ai/Containerfile images/rhel-ai/build/instructlab-nvidia images/rhel-ai/build/deepspeed-trainer images/rhel-ai/build/vllm

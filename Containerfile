@@ -10,7 +10,9 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
  && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
  || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
       /etc/containers/storage.conf \
- && mkdir -p /boot/efi
+ && mkdir -p /boot/efi \
+ && mv /boot/loader /boot/loader.0 \
+ && ln -s /boot/loader.0 /boot/loader
 
 # Enable L4T/Jetpack 6 on the AGX Orin
 COPY overlays/nvidia/ /

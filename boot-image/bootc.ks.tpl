@@ -5,7 +5,7 @@ network --bootproto=dhcp --device=link --activate
 # Partition/volume setup
 zerombr
 clearpart --all --initlabel --disklabel=gpt
-reqpart
+reqpart --add-boot
 part / --fstype xfs --size 100 --grow --ondisk mmcblk0
 
 part pv.02 --grow --ondisk nvme0n1

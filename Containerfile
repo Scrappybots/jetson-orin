@@ -33,6 +33,4 @@ RUN useradd -m core \
 
 # Fix up initrd/bootloader issues
 RUN kver=$(cd /usr/lib/modules && ls | sort -V | tail -1); dracut -vf /usr/lib/modules/$kver/initramfs.img $kver \
- && mkdir -p /boot/efi \
- && mv /boot/loader /boot/loader.0 \
- && ln -s /boot/loader.0 /boot/loader
+ && mkdir -p /boot/efi

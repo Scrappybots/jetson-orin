@@ -9,10 +9,7 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       lm_sensors \
  && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
  || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
-      /etc/containers/storage.conf \
- && mkdir -p /boot/efi \
- && mv /boot/loader /boot/loader.0 \
- && ln -s /boot/loader.0 /boot/loader
+      /etc/containers/storage.conf
 
 # Enable L4T/Jetpack 6 on the AGX Orin
 COPY overlays/nvidia/ /
@@ -33,3 +30,9 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
 COPY overlays/users/ /
 RUN useradd -m core \
  && chown core:core /usr/local/ssh/core.keys
+
+# Fix up initrd/bootloader issues
+RUN kver=$(cd /usr/lib/modules && ls | sort -V | tail -1); dracut -vf /usr/lib/modules/$kver/initramfs.img $kver \
+ && mkdir -p /boot/efi \
+ && mv /boot/loader /boot/loader.0 \
+ && ln -s /boot/loader.0 /boot/loader

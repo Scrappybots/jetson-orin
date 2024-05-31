@@ -110,7 +110,7 @@ RUN ldconfig /usr/local/cuda-12.2/compat/
 ## Python cuda base #################################################################
 FROM cuda-devel as python-cuda-base
 
-COPY --from=python-install --link /opt/vllm /opt/vllm
+COPY --from=python-install /opt/vllm /opt/vllm
 ENV PATH=/opt/vllm/bin/:$PATH
 
 # install cuda and common dependencies
@@ -168,7 +168,7 @@ ENV PATH=/usr/local/cuda/bin:$PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # Copy over the generated *.pb2 files
-COPY --from=gen-protos --link /workspace/vllm/entrypoints/grpc/pb vllm/entrypoints/grpc/pb
+COPY --from=gen-protos /workspace/vllm/entrypoints/grpc/pb vllm/entrypoints/grpc/pb
 
 ENV CCACHE_DIR=/root/.cache/ccache
 RUN --mount=type=cache,target=/root/.cache/ccache \
@@ -180,7 +180,7 @@ FROM cuda-runtime AS vllm-openai
 WORKDIR /workspace
 
 # Create release python environment
-COPY --from=python-cuda-base --link /opt/vllm /opt/vllm
+COPY --from=python-cuda-base /opt/vllm /opt/vllm
 ENV PATH=/opt/vllm/bin/:$PATH
 
 # install vllm wheel first, so that torch etc will be installed

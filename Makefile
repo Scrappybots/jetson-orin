@@ -1,30 +1,11 @@
 RUNTIME := podman
 BASE := registry.redhat.io/rhel9/rhel-bootc:9.4
-CUDA_BASE := nvcr.io/nvidia/cuda:12.3.2-devel-ubi9
-CUDNN_BASE := nvcr.io/nvidia/cuda:12.1.1-cudnn8-devel-ubi9
-REGISTRY := registry.jharmison.com
-REPOSITORY := l4t/image
-TAG := latest
-IMAGE = $(REGISTRY)/$(REPOSITORY):$(TAG)
 DEST := /dev/sda
-VLLM_COMMIT := 3dc28190247ee1fd4d228d5860559e1417ee0451
 
-#
-# If you want to see the full commands, run:
-#   NOISY_BUILD=y make
-#
-ifeq ($(NOISY_BUILD),)
-    ECHO_PREFIX=@
-    CMD_PREFIX=@
-    PIPE_DEV_NULL=> /dev/null 2> /dev/null
-else
-    ECHO_PREFIX=@\#
-    CMD_PREFIX=
-    PIPE_DEV_NULL=
-endif
+include Makefile.common
 
 .PHONY: all
-all: .push boot-image/l4t-bootc.iso images/rhel-ai/.push
+all: .push boot-image/l4t-bootc.iso rhel-ai
 
 overlays/users/usr/local/ssh/core.keys:
 	@echo Please put the authorized_keys file you would like for the core user in $@ >&2
@@ -72,28 +53,6 @@ clean:
 	$(CMD_PREFIX) rm -f .build .push .ksimage boot-image/bootc.ks boot-image/l4t-bootc.iso images/rhel-ai/overlays/vllm/build/workspace
 	$(CMD_PREFIX) buildah prune -f
 
-images/rhel-ai/build/instructlab-nvidia: images/rhel-ai/Containerfile.ilab $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos')
-	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDA_BASE) -f Containerfile.ilab --layers=false --squash-all images/rhel-ai -t oci:$@
-
-images/rhel-ai/build/deepspeed-trainer: images/rhel-ai/Containerfile.deepspeed
-	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDNN_BASE) -f Containerfile.deepspeed --layers=false --squash-all images/rhel-ai -t oci:$@
-
-images/rhel-ai/overlays/vllm/build/workspace/setup.py:
-	$(CMD_PREFIX) mkdir -p $(@D) && cd $(@D) && { \
-		git clone https://github.com/IBM/vllm . || git fetch ; \
-	}
-	$(CMD_PREFIX) cd $(@D) && git branch rhel-ai $(VLLM_COMMIT) && git switch rhel-ai && rm -rf .git
-
-images/rhel-ai/build/vllm: images/rhel-ai/Containerfile.vllm $(shell git ls-files | grep '^images/rhel-ai/overlays/vllm') $(shell git ls-files | grep '^images/rhel-ai/overlays/cuda-repos') images/rhel-ai/overlays/vllm/build/workspace/setup.py
-	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always -f Containerfile.vllm --layers=false --squash-all images/rhel-ai -t oci:$@
-
-images/rhel-ai/.build: images/rhel-ai/Containerfile images/rhel-ai/build/instructlab-nvidia images/rhel-ai/build/deepspeed-trainer images/rhel-ai/build/vllm
-	$(CMD_PREFIX) $(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(IMAGE) images/rhel-ai -t $(REGISTRY)/$(REPOSITORY):rhel-ai
-	@touch $@
-
-images/rhel-ai/.push: images/rhel-ai/.build
-	$(CMD_PREFIX) $(RUNTIME) push $(REGISTRY)/$(REPOSITORY):rhel-ai
-	@touch $@
-
 .PHONY: rhel-ai
-rhel-ai: images/rhel-ai/.push
+rhel-ai:
+	$(MAKE) -C images/rhel-ai

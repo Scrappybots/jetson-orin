@@ -1,0 +1,18 @@
+RUNTIME := podman
+REGISTRY := registry.jharmison.com
+REPOSITORY := l4t/image
+TAG := latest
+IMAGE = $(REGISTRY)/$(REPOSITORY):$(TAG)
+
+# If you want to see the full commands, run:
+#   NOISY_BUILD=y make
+#
+ifeq ($(NOISY_BUILD),)
+    ECHO_PREFIX=@
+    CMD_PREFIX=@
+    PIPE_DEV_NULL=> /dev/null 2> /dev/null
+else
+    ECHO_PREFIX=@\#
+    CMD_PREFIX=
+    PIPE_DEV_NULL=
+endif

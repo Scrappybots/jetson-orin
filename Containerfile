@@ -1,7 +1,5 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
-# LABEL org.opencontainers.image.version=exampleversion
-
 # Perform an initial update and do some basic package installation
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
     dnf -y install \
@@ -11,7 +9,8 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       lm_sensors \
  && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
  || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
-      /etc/containers/storage.conf
+      /etc/containers/storage.conf \
+ && mkdir -p /boot/efi
 
 # Enable L4T/Jetpack 6 on the AGX Orin
 COPY overlays/nvidia/ /

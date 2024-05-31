@@ -2,7 +2,6 @@ FROM registry.jharmison.com/l4t/image:latest
 
 # Install some useful developer tools and environment niceties
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
-    dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
  && dnf -y install \
       make \
       gcc \
@@ -15,5 +14,4 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       python3.12-devel \
       python3.12-pip-wheel \
       fastfetch \
-      btop \
-      nvtop
+      btop

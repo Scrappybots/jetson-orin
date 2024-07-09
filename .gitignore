@@ -1,9 +1,7 @@
 *.iso
-*.ks
 *.btn
 *.ign
 auth.json
 .build
 .push
-.ksimage
 images/rhel-ai/overlays/vllm/build/workspace

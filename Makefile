@@ -7,7 +7,7 @@ RHCOS_VERSION ?= 4.16
 include Makefile.common
 
 .PHONY: all
-all: .push boot-image/l4t-bootc.iso rhel-ai
+all: .push boot-image/l4t-bootc-rhcos.iso rhel-ai
 
 overlays/users/usr/local/ssh/core.keys:
 	@echo Please put the authorized_keys file you would like for the core user in $@ >&2
@@ -46,18 +46,6 @@ boot-image/l4t-bootc-rhcos.iso: boot-image/bootc.ign
 	$(RUNTIME) run --rm --arch aarch64 --security-opt label=disable --pull=newer -v ./:/data -w /data \
     	quay.io/coreos/coreos-installer:release iso customize --live-ignition=./$< \
     	-o $@ boot-image/rhcos-live.aarch64.iso
-
-.ksimage: Containerfile.ksimage
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(BASE) . -f $< -t $(IMAGE)-ksimage
-	@touch $@
-
-boot-image/bootc.ks: boot-image/bootc.ks.tpl overlays/auth/etc/ostree/auth.json
-	IMAGE=$(IMAGE) AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) envsubst '$$IMAGE,$$AUTH,$$DISK' < $< >$@
-	@echo Updated kickstart
-
-boot-image/l4t-bootc.iso: boot-image/bootc.ks .ksimage boot-image/rhel-9.4-aarch64-boot.iso
-	$(RUNTIME) run --rm --arch aarch64 -v ./boot-image:/workdir --privileged --security-opt label=disable --entrypoint bash --workdir /workdir $(IMAGE)-ksimage -exc \
-		'ksvalidator $(<F) && rm -f $(@F) && mkksiso $(<F) rhel-9.4-aarch64-boot.iso $(@F)'
 
 .PHONY: burn
 burn: boot-image/l4t-bootc-rhcos.iso

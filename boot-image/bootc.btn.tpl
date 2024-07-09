@@ -25,12 +25,12 @@ systemd:
       contents: |
         [Unit]
         Description=Install a bootc image to the disk
-        After=network-online.target
-        Wants=network-online.target
+        After=network-online.target systemd-hostnamed.service
+        Wants=network-online.target systemd-hostnamed.service
         [Service]
         User=root
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /usr/lib/containers:/usr/lib/containers -v /dev:/dev --security-opt label=disable ${IMAGE} bootc install to-disk --wipe /dev/${DISK}
+        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /etc/ostree:/etc/ostree -v /dev:/dev --security-opt label=type:unconfined_t ${IMAGE} bootc install to-disk --wipe /dev/${DISK}
         [Install]
         WantedBy=multi-user.target

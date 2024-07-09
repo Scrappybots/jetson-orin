@@ -31,6 +31,7 @@ systemd:
         User=root
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /etc/ostree:/etc/ostree -v /dev:/dev --security-opt label=type:unconfined_t ${BASE} bootc install to-disk --wipe /dev/${DISK} --target_imgref ${IMAGE}
+        ExecStartPre=/bin/sh -c 'until ping -q -c 1 google.com; do sleep 1; done'
+        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /etc/ostree:/etc/ostree -v /dev:/dev --security-opt label=type:unconfined_t ${BASE} bootc install to-disk --wipe /dev/${DISK} --target-imgref ${IMAGE}
         [Install]
         WantedBy=multi-user.target

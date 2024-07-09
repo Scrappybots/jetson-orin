@@ -40,7 +40,7 @@ boot-image/rhcos-live.aarch64.iso:
 	touch .base
 
 boot-image/bootc.btn: boot-image/bootc.btn.tpl .base overlays/auth/etc/ostree/auth.json
-	IMAGE=$(IMAGE) AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) BASE=$(MIRRORED_BASE) envsubst '$$IMAGE,$$AUTH,$$DISK,$$BASE' < $< >$@
+	IMAGE=$(IMAGE)-devel AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) BASE=$(MIRRORED_BASE) envsubst '$$IMAGE,$$AUTH,$$DISK,$$BASE' < $< >$@
 
 boot-image/bootc.ign: boot-image/bootc.btn
 	$(RUNTIME) run --rm -i quay.io/coreos/butane:release --pretty --strict < $< >$@

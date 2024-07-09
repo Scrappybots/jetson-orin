@@ -2,6 +2,7 @@
 *.btn
 *.ign
 auth.json
+.base
 .build
 .push
 images/rhel-ai/overlays/vllm/build/workspace

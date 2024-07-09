@@ -25,8 +25,8 @@ systemd:
       contents: |
         [Unit]
         Description=Install a bootc image to the disk
-        After=network-online.target systemd-hostnamed.service
-        Wants=network-online.target systemd-hostnamed.service
+        After=NetworkManager-wait-online.service systemd-hostnamed.service
+        Wants=NetworkManager-wait-online.service systemd-hostnamed.service
         [Service]
         User=root
         Type=oneshot

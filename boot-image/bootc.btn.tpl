@@ -31,6 +31,6 @@ systemd:
         User=root
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /etc/ostree:/etc/ostree -v /dev:/dev --security-opt label=type:unconfined_t ${IMAGE} bootc install to-disk --wipe /dev/${DISK}
+        ExecStart=/usr/bin/podman run --authfile /etc/ostree/auth.json --rm --privileged --pid=host -v /var/lib/containers:/var/lib/containers -v /etc/ostree:/etc/ostree -v /dev:/dev --security-opt label=type:unconfined_t ${BASE} bootc install to-disk --wipe /dev/${DISK} --target_imgref ${IMAGE}
         [Install]
         WantedBy=multi-user.target

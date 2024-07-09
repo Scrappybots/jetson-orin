@@ -36,7 +36,7 @@ boot-image/rhcos-live.aarch64.iso:
 	curl -Lo $@ https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/$(RHCOS_VERSION)/latest/rhcos-live.aarch64.iso
 
 boot-image/bootc.btn: boot-image/bootc.btn.tpl overlays/auth/etc/ostree/auth.json
-	IMAGE=$(IMAGE) AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) envsubst '$$IMAGE,$$AUTH,$$DISK' < $< >$@
+	IMAGE=$(IMAGE) AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) BASE=$(BASE) envsubst '$$IMAGE,$$AUTH,$$DISK,$$BASE' < $< >$@
 
 boot-image/bootc.ign: boot-image/bootc.btn
 	$(RUNTIME) run --rm -i quay.io/coreos/butane:release --pretty --strict < $< >$@

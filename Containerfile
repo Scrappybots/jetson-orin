@@ -1,12 +1,14 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
-# Perform an initial update and do some basic package installation
+# Perform some basic package installation
+COPY overlays/auth/ /
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
     dnf -y install \
       tmux \
       podman \
       curl \
       lm_sensors \
+ && mkdir -p /usr/lib/containers/storage \
  && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
  || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
       /etc/containers/storage.conf
@@ -32,5 +34,4 @@ RUN useradd -m core \
  && chown core:core /usr/local/ssh/core.keys
 
 # Fix up initrd/bootloader issues
-RUN kver=$(cd /usr/lib/modules && ls | sort -V | tail -1); dracut -vf /usr/lib/modules/$kver/initramfs.img $kver \
- && mkdir -p /boot/efi
+RUN kver=$(cd /usr/lib/modules && ls | sort -V | tail -1); dracut -vf /usr/lib/modules/$kver/initramfs.img $kver

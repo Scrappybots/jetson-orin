@@ -3,6 +3,7 @@ DISK ?= mmcblk0
 ISO_DEST ?= /dev/sda
 RHCOS_VERSION ?= 4.16
 KVER ?= 5.14.0-427.18.1.el9_4.aarch64
+IMAGE_SUFFIX ?=
 
 include Makefile.common
 
@@ -40,20 +41,20 @@ boot-image/rhcos-live.aarch64.iso:
 	$(RUNTIME) push --remove-signatures $(BASE) $(REGISTRY)/$(REPOSITORY):base
 	touch .base
 
-boot-image/bootc.btn: boot-image/bootc.btn.tpl overlays/auth/etc/ostree/auth.json
-	IMAGE=$(IMAGE)-devel AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) envsubst '$$IMAGE,$$AUTH,$$DISK' < $< >$@
+boot-image/bootc$(IMAGE_SUFFIX).btn: boot-image/bootc.btn.tpl overlays/auth/etc/ostree/auth.json
+	IMAGE=$(IMAGE)$(IMAGE_SUFFIX) AUTH='$(strip $(file < overlays/auth/etc/ostree/auth.json))' DISK=$(DISK) envsubst '$$IMAGE,$$AUTH,$$DISK' < $< >$@
 
-boot-image/bootc.ign: boot-image/bootc.btn
+boot-image/bootc$(IMAGE_SUFFIX).ign: boot-image/bootc$(IMAGE_SUFFIX).btn
 	$(RUNTIME) run --rm -i quay.io/coreos/butane:release --pretty --strict < $< >$@
 
-boot-image/l4t-bootc-rhcos.iso: boot-image/bootc.ign
+boot-image/l4t-bootc-rhcos$(IMAGE_SUFFIX).iso: boot-image/bootc$(IMAGE_SUFFIX).ign
 	@if [ -e $@ ]; then rm -f $@; fi
 	$(RUNTIME) run --rm --arch aarch64 --security-opt label=disable --pull=newer -v ./:/data -w /data \
     	quay.io/coreos/coreos-installer:release iso customize --live-ignition=./$< \
     	-o $@ boot-image/rhcos-live.aarch64.iso
 
 .PHONY: burn
-burn: boot-image/l4t-bootc-rhcos.iso
+burn: boot-image/l4t-bootc-rhcos$(IMAGE_SUFFIX).iso
 	sudo dd if=./$< of=$(ISO_DEST) bs=1M conv=fsync status=progress
 
 .PHONY: debug

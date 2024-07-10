@@ -2,6 +2,7 @@ RUNTIME ?= podman
 DISK ?= mmcblk0
 ISO_DEST ?= /dev/sda
 RHCOS_VERSION ?= 4.16
+KVER ?= 5.14.0-427.18.1
 
 include Makefile.common
 
@@ -16,7 +17,7 @@ overlays/auth/etc/ostree/auth.json:
 	@if [ -e "$@" ]; then touch "$@"; else echo "Please put the auth.json for your registry $(REGISTRY)/$(REPOSITORY) in $@"; exit 1; fi
 
 .build: Containerfile Containerfile.devel overlays/auth/etc/ostree/auth.json $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=newer --from $(BASE) . -t $(IMAGE)
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --build-arg KVER=$(KVER) --pull=newer --from $(BASE) . -t $(IMAGE)
 	$(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(IMAGE) --pull=never -f Containerfile.devel . -t $(IMAGE)-devel
 	@touch $@
 

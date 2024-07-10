@@ -70,7 +70,7 @@ update:
 
 .PHONY: clean
 clean:
-	rm -rf .build .push .ksimage boot-image/rhcos-live.aarch64.iso boot-image/bootc.ks boot-image/l4t-bootc.iso boot-image/bootc.btn boot-image/bootc.ign boot-image/l4t-bootc-rhcos.iso images/rhel-ai/overlays/vllm/build/workspace
+	rm -rf .build .push boot-image/*.iso boot-image/*.btn boot-image/*.ign images/rhel-ai/overlays/vllm/build/workspace
 	buildah prune -f
 
 .PHONY: rhel-ai

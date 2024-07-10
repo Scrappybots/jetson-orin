@@ -8,11 +8,7 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       podman \
       curl \
       lm_sensors \
-      btop \
- && mkdir -p /usr/lib/containers/storage \
- && grep -q /usr/lib/containers/storage /etc/containers/storage.conf \
- || sed -i -e '/additionalimage.*/a "/usr/lib/containers/storage",' \
-      /etc/containers/storage.conf
+      btop
 
 # Enable L4T/Jetpack 6 on the AGX Orin
 COPY overlays/nvidia/ /

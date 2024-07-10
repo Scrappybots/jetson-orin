@@ -1,13 +1,12 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4
 
-ARG KVER=5.14.0-427.18.1
+ARG KVER=5.14.0-427.18.1.el9_4.aarch64
 
 # Perform some basic package installation
 COPY overlays/auth/ /
 RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cache,id=dnf-cache \
-    trailer=$(ls -d /usr/lib/modules/* | sort -V | tail -1 | rev | cut -d. -f1,2 | rev) \
- && dnf -y install kernel-${KVER}.$trailer kernel-headers-${KVER}.$trailer \
- && dracut -vf /usr/lib/modules/${KVER}.$trailer/initramfs.img ${KVER}.$trailer \
+    dnf -y install kernel-${KVER} kernel-headers-${KVER} \
+ && dracut -vf /usr/lib/modules/${KVER}/initramfs.img ${KVER} \
  && dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
  && dnf -y install \
       tmux \

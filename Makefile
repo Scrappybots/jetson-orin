@@ -2,7 +2,7 @@ RUNTIME ?= podman
 DISK ?= mmcblk0
 ISO_DEST ?= /dev/sda
 RHCOS_VERSION ?= 4.16
-KVER ?= 5.14.0-427.18.1
+KVER ?= 5.14.0-427.18.1.el9_4.aarch64
 
 include Makefile.common
 

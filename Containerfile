@@ -26,12 +26,7 @@ RUN --mount=target=/var/cache,type=tmpfs --mount=target=/var/cache/dnf,type=cach
       nvidia-jetpack-kmod \
       nvtop
 
-# Some helpful debugging output
-#COPY overlays/debug/ /
-
 # Basic user configuration with nss-altfiles
 COPY overlays/users/ /
 RUN useradd -m core \
  && chown core:core /usr/local/ssh/core.keys
-
-# Fix up initrd/bootloader issues

@@ -11,10 +11,12 @@ WRAPPER_OVERLAY ?= $(shell git ls-files | grep '^overlays/wrappers')
 all: .push
 
 build/instructlab-nvidia: Containerfile.ilab $(CUDA_OVERLAY)
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDA_BASE) -f $< --layers=false --squash-all . -t oci:$@
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=newer --from $(CUDA_BASE) -f $< . -t instructlab-nvidia
+	$(RUNTIME) build --layers=false --squash-all --from instructlab-nvidia -t oci:$@ -f Containerfile.flatten .
 
 build/deepspeed-trainer: Containerfile.deepspeed
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(CUDNN_BASE) -f $< --layers=false --squash-all . -t oci:$@
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=newer --from $(CUDNN_BASE) -f $< . -t deepspeed-trainer
+	$(RUNTIME) build --layers=false --squash-all --from deepspeed-trainer -t oci:$@ -f Containerfile.flatten .
 
 overlays/vllm/build/workspace/setup.py:
 	mkdir -p $(@D) && cd $(@D) && { \
@@ -23,7 +25,8 @@ overlays/vllm/build/workspace/setup.py:
 	cd $(@D) && git branch rhel-ai $(VLLM_COMMIT) && git switch rhel-ai && rm -rf .git
 
 build/vllm: Containerfile.vllm $(CUDA_OVERLAY) $(VLLM_OVERLAY) overlays/vllm/build/workspace/setup.py
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always -f $< --layers=false --squash-all . -t oci:$@
+	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=newer -f $< . -t vllm
+	$(RUNTIME) build --layers=false --squash-all --from vllm -t oci:$@ -f Containerfile.flatten .
 
 .build: Containerfile build/instructlab-nvidia build/deepspeed-trainer build/vllm $(WRAPPER_OVERLAY)
 	$(RUNTIME) build --security-opt label=disable --arch aarch64 --pull=always --from $(IMAGE) . -t $(REGISTRY)/$(REPOSITORY):rhel-ai

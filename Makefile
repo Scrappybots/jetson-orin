@@ -1,5 +1,5 @@
 RUNTIME ?= podman
-DISK ?= mmcblk0
+DISK ?= nvme0n1
 ISO_DEST ?= /dev/sda
 RHCOS_VERSION ?= 4.16
 KVER ?= 5.14.0-427.18.1.el9_4.aarch64
@@ -8,7 +8,8 @@ IMAGE_SUFFIX ?=
 include Makefile.common
 
 .PHONY: all
-all: .push boot-image/l4t-bootc-rhcos.iso rhel-ai
+all: .push boot-image/l4t-bootc-rhcos.iso 
+# Moved this down and commented, will build rhel-ai at a later time.
 
 overlays/users/usr/local/ssh/core.keys:
 	@echo Please put the authorized_keys file you would like for the core user in $@ >&2
@@ -17,9 +18,13 @@ overlays/users/usr/local/ssh/core.keys:
 overlays/auth/etc/ostree/auth.json:
 	@if [ -e "$@" ]; then touch "$@"; else echo "Please put the auth.json for your registry $(REGISTRY)/$(REPOSITORY) in $@"; exit 1; fi
 
+boot-image/rhcos-live.aarch64.iso:
+	curl -Lo $@ https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/$(RHCOS_VERSION)/latest/rhcos-live.aarch64.iso
+
+
 .build: Containerfile Containerfile.devel overlays/auth/etc/ostree/auth.json $(shell git ls-files | grep '^overlays/') overlays/users/usr/local/ssh/core.keys
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --build-arg KVER=$(KVER) --pull=newer --from $(BASE) . -t $(IMAGE)
-	$(RUNTIME) build --security-opt label=disable --arch aarch64 --from $(IMAGE) --pull=never -f Containerfile.devel . -t $(IMAGE)-devel
+	$(RUNTIME) build --security-opt label=disable --arch arm64 --build-arg KVER=$(KVER) --pull=newer --from $(BASE) . -t $(IMAGE)
+	$(RUNTIME) build --security-opt label=disable --arch arm64 --from $(IMAGE) --pull=never -f Containerfile.devel . -t $(IMAGE)-devel
 	@touch $@
 
 .PHONY: build
@@ -33,8 +38,7 @@ build: .build
 .PHONY: push
 push: .push
 
-boot-image/rhcos-live.aarch64.iso:
-	curl -Lo $@ https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/$(RHCOS_VERSION)/latest/rhcos-live.aarch64.iso
+
 
 .base:
 	$(RUNTIME) pull --arch aarch64 $(BASE)
@@ -73,6 +77,6 @@ clean:
 	rm -rf .build .push boot-image/*.iso boot-image/*.btn boot-image/*.ign images/rhel-ai/overlays/vllm/build/workspace
 	buildah prune -f
 
-.PHONY: rhel-ai
-rhel-ai:
-	$(MAKE) -C images/rhel-ai
+# .PHONY: rhel-ai
+# rhel-ai:
+# 	$(MAKE) -C images/rhel-ai

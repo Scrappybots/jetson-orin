@@ -1,6 +1,6 @@
 RUNTIME ?= podman
-REGISTRY ?= registry.jharmison.com
-REPOSITORY ?= l4t/image
+REGISTRY ?= docker.io
+REPOSITORY ?= tinkster42/jetson-orin
 BASE ?= registry.redhat.io/rhel9/rhel-bootc:9.4
 MIRRORED_BASE ?= $(REGISTRY)/$(REPOSITORY):base
 TAG ?= latest

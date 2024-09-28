@@ -1,4 +1,4 @@
-FROM registry.jharmison.com/l4t/image:latest
+FROM docker.io/tinkster42/jetson-orin:latest
 
 # Enable journal output on TTY1 and automatic login on TTY2
 COPY overlays/debug/ /

@@ -6,3 +6,4 @@ auth.json
 .build
 .push
 images/rhel-ai/overlays/vllm/build/workspace
+images/rhel-ai/build/

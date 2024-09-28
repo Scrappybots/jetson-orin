@@ -1,4 +1,4 @@
-FROM registry.jharmison.com/l4t/image:latest
+FROM docker.io/tinkster42/jetson-orin:latest
 
 # Disable vGPU version compatibility check by default
 ARG DISABLE_VGPU_VERSION_CHECK=true
